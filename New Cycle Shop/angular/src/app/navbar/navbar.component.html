@@ -1,12 +1,14 @@
 <header class="wrapper">
-    <div class="navbar">
-        <h3>Rental</h3>
-    </div>
+  <div class="navbar">
+    <h3>Rental</h3>
     <nav>
-        <ul>
-            <li><a routerLink="/cycles" routerLinkActive="active">Cycles</a></li>
-            <li><a routerLink="/cart" appAuthClick routerLinkActive="active" >Cart</a></li>
-            <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
-        </ul>
+      <ul class="nav-items">
+        <li><a routerLink="/cycles" class="nav-link" routerLinkActive="active">Cycles</a></li>
+        <li>
+          <a routerLink="/cart" class="nav-link" appAuthClick routerLinkActive="active">Cart</a>
+        </li>
+        <li><a routerLink="/login" class="nav-link" routerLinkActive="active">Login</a></li>
+      </ul>
     </nav>
+  </div>
 </header>
