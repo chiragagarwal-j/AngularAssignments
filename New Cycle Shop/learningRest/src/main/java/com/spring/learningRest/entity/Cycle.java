@@ -11,7 +11,7 @@ import lombok.Data;
 @Entity
 @Table(name = "Cycles", uniqueConstraints = { @UniqueConstraint(columnNames = { "brand" }) })
 @Data
-public class CycleStock {
+public class Cycle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -20,7 +20,7 @@ public class CycleStock {
 
     private int stock;
     private int numBorrowed;
-
+    private int price;
     public int getNumAvailable() {
         return stock - numBorrowed;
     }

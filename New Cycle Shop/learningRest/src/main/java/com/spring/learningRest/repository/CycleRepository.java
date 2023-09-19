@@ -2,8 +2,8 @@ package com.spring.learningRest.repository;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.spring.learningRest.entity.CycleStock;
+import com.spring.learningRest.entity.Cycle;
 
-public interface CycleStockRepository extends CrudRepository<CycleStock, Integer> {
+public interface CycleRepository extends CrudRepository<Cycle, Integer> {
 
 }
