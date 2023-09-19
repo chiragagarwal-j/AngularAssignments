@@ -26,9 +26,9 @@ export class ApiService {
 		return this.http.post<any[]>(returnUrl, null);
 	}
 
-	public save(cycle: Cycle): Observable<Cycle> {
-		return this.http.post<Cycle>(`${this.baseUrl}/addCycle`, cycle);
-	}
+	// public save(cycle: Cycle): Observable<Cycle> {
+	// 	return this.http.post<Cycle>(`${this.baseUrl}/addCycle`, cycle);
+	// }
 
 	// Add a method to fetch data after every action
 	fetchDataAfterAction(action: () => Observable<any[]>): Observable<any[]> {

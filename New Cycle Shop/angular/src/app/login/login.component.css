@@ -31,7 +31,7 @@ input[type="password"] {
   border-radius: 4px;
 }
 
-input[type="submit"] {
+.btn-login {
   background-color: #007bff;
   color: #fff;
   padding: 10px 15px;
@@ -41,6 +41,3 @@ input[type="submit"] {
   width: 100%;
 }
 
-input[type="submit"]:hover {
-  background-color: #0056b3;
-}

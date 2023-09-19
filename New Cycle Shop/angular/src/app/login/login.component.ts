@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { AuthService } from '../auth.service';
+import { LoginForm } from '../login-form';
 
 @Component({
   selector: 'app-login',
@@ -7,4 +9,13 @@ import { Component } from '@angular/core';
 })
 export class LoginComponent {
 
+  constructor(private authService: AuthService) {
+
+  }
+
+  login(loginForm: any): void {
+    if (loginForm.invalid) return;
+    this.authService.login(loginForm.value as LoginForm).subscribe();
+  }
+  
 }

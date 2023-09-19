@@ -1,0 +1,46 @@
+<h3>Rent Cycle</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Cycle ID</th>
+        <th>Brand</th>
+        <th>In Stock</th>
+        <th>Borrow</th>
+        <th>Restock</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cycle of data">
+        <td>{{ cycle.id }}</td>
+        <td>{{ cycle.brand }}</td>
+        <td>{{ cycle.stock - cycle.numBorrowed }}</td>
+        <td><button (click)="borrowCycle(cycle.id)">Borrow</button></td>
+        <td>
+          <input type="number" id="restock" name="restockQuantity" min="1" />
+          <input type="submit" value="Restock" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Return Cycle</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Cycle ID</th>
+        <th>Brand</th>
+        <th>Return</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let cycle of data">
+        <tr *ngIf=true>
+          <td>{{ cycle.id }}</td>
+          <td>{{ cycle.brand }}</td>
+          <td><button (click)="returnCycle(cycle.id)">Return</button></td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
