@@ -8,12 +8,17 @@ import { AppRoutingModule } from './app-routing.module';
 import { CyclesComponent } from './cycles/cycles.component';
 import { FormsModule } from '@angular/forms';
 import { RequestInterceptor } from './request.interceptor';
+import { NavbarComponent } from './navbar/navbar.component';
+import { BaseLayoutComponent } from './base-layout/base-layout.component';
+import { SiteLayoutComponent } from './site-layout/site-layout.component';
+import { AuthClickDirective } from './auth-click.directive';
+import { CartComponent } from './cart/cart.component';
 
 
 @NgModule({
+  declarations: [AppComponent, RegisterComponent, LoginComponent, CyclesComponent, NavbarComponent, BaseLayoutComponent, SiteLayoutComponent, AuthClickDirective, CartComponent],
   imports: [BrowserModule, HttpClientModule, AppRoutingModule, FormsModule],
-  declarations: [AppComponent, RegisterComponent, LoginComponent, CyclesComponent],
-  providers: [{provide:HTTP_INTERCEPTORS,useClass:RequestInterceptor,multi:true}],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: RequestInterceptor, multi: true }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

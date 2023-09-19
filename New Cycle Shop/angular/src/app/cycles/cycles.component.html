@@ -1,46 +1,39 @@
 <h3>Rent Cycle</h3>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Cycle ID</th>
-        <th>Brand</th>
-        <th>In Stock</th>
-        <th>Borrow</th>
-        <th>Restock</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let cycle of data">
-        <td>{{ cycle.id }}</td>
-        <td>{{ cycle.brand }}</td>
-        <td>{{ cycle.stock - cycle.numBorrowed }}</td>
-        <td><button (click)="borrowCycle(cycle.id)">Borrow</button></td>
-        <td>
-          <input type="number" id="restock" name="restockQuantity" min="1" />
-          <input type="submit" value="Restock" />
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <h3>Return Cycle</h3>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Cycle ID</th>
-        <th>Brand</th>
-        <th>Return</th>
-      </tr>
-    </thead>
-    <tbody>
-      <ng-container *ngFor="let cycle of data">
-        <tr *ngIf=true>
-          <td>{{ cycle.id }}</td>
-          <td>{{ cycle.brand }}</td>
-          <td><button (click)="returnCycle(cycle.id)">Return</button></td>
-        </tr>
-      </ng-container>
-    </tbody>
-  </table>
+<table>
+  <thead>
+    <tr>
+      <th>Cycle ID</th>
+      <th>Brand</th>
+      <th>In Stock</th>
+      <th>action</th>
+      <th *ngIf="this.authService.isUserAdmin()">Restock</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let cycle of data">
+      <td>{{ cycle.id }}</td>
+      <td>{{ cycle.brand }}</td>
+      <td>{{ cycle.stock - cycle.numBorrowed }}</td>
+      <td>
+        <input type="number" min="1" [max]="cycle.stock" #quantity ngModel >
+        <button (click)="borrowCycle(cycle.id)" appAuthClick>
+          Add to Cart
+        </button>
+      </td>
+      <td *ngIf="this.authService.isUserAdmin()">
+        <input
+          type="number"
+          id="restock"
+          name="quantity"
+          #quantity
+          ngModel
+          min="1"
+        />
+        <button (click)="restockCycle(cycle.id, quantity.valueAsNumber)">
+          submit
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>

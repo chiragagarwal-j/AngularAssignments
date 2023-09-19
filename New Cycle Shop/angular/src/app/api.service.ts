@@ -8,17 +8,17 @@ import { Cycle } from './cycle';
 	providedIn: 'root'
 })
 export class ApiService {
-	private baseUrl = 'http://localhost:8080/api/cycleStocks';
+	private baseUrl = 'http://localhost:8080/api/cycles';
 
 	constructor(private http: HttpClient) { }
 
 	getData(): Observable<any[]> {
-		return this.http.get<any[]>(this.baseUrl);
+		return this.http.get<any[]>(`${this.baseUrl}/list`);
 	}
 
 	borrowCycle(cycleId: number): Observable<any[]> {
 		const borrowUrl = `${this.baseUrl}/${cycleId}/borrow`;
-		return this.http.post<any[]>(borrowUrl, null);
+		return this.http.post<any[]>(borrowUrl, {});
 	}
 
 	returnCycle(cycleId: number): Observable<any[]> {
@@ -26,14 +26,19 @@ export class ApiService {
 		return this.http.post<any[]>(returnUrl, null);
 	}
 
+	restockCycle(cycleId: number, quantity: number): Observable<any[]> {
+		const restockUrl = `${this.baseUrl}/${cycleId}/restock`;
+		return this.http.post<any[]>(restockUrl,{}, {params: {quantity: quantity.toString()}});
+	}
+
 	// public save(cycle: Cycle): Observable<Cycle> {
 	// 	return this.http.post<Cycle>(`${this.baseUrl}/addCycle`, cycle);
 	// }
 
 	// Add a method to fetch data after every action
-	fetchDataAfterAction(action: () => Observable<any[]>): Observable<any[]> {
-		return action().pipe(
-			switchMap(() => this.getData())
-		);
-	}
+	// fetchDataAfterAction(action: () => Observable<any[]>): Observable<any[]> {
+	// 	return action().pipe(
+	// 		switchMap(() => this.getData())
+	// 	);
+	// }
 }

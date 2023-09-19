@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Cycle } from '../cycle';
 import { ApiService } from '../api.service';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-cycles',
@@ -10,45 +11,25 @@ import { ApiService } from '../api.service';
 export class CyclesComponent {
   data: Cycle[] = []; // Use the Cycle class for data
 
-  constructor(private api: ApiService) { }
+  constructor(private api: ApiService,public authService: AuthService) { }
 
   ngOnInit() {
     this.loadData();
   }
 
   private loadData() {
-    this.api.getData().subscribe(
-      (response: Cycle[]) => { // Specify the correct data type for response
-        console.log(response);
-        this.data = response;
-      },
-      (error) => {
-        console.error('Error fetching data:', error);
-      }
-    );
+    this.api.getData().subscribe(res => this.data = res);
   }
 
-  borrowCycle(cycleId: number ) {
-    this.api.fetchDataAfterAction(() => this.api.borrowCycle(cycleId)).subscribe(
-      (response: Cycle[]) => { // Specify the correct data type for response
-        console.log(response);
-        this.data = response;
-      },
-      (error) => {
-        console.error('Error borrowing cycle:', error);
-      }
-    );
+  borrowCycle(cycleId: number) {
+    this.api.borrowCycle(cycleId).subscribe(res => this.data = res);
   }
 
   returnCycle(cycleId: number) {
-    this.api.fetchDataAfterAction(() => this.api.returnCycle(cycleId)).subscribe(
-      (response: Cycle[]) => { // Specify the correct data type for response
-        console.log(response);
-        this.data = response;
-      },
-      (error) => {
-        console.error('Error returning cycle:', error);
-      }
-    );
+    this.api.returnCycle(cycleId).subscribe(res => this.data = res);
+  }
+
+  restockCycle(cycleId: number, quantity: number) {
+    this.api.restockCycle(cycleId, quantity).subscribe(res => this.data = res);
   }
 }
