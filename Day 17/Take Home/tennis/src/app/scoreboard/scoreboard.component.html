@@ -1,0 +1,33 @@
+<div class="scoreboard-container">
+    <h3>TENNIS SCOREBOARD</h3>
+    <form>
+        <div class="center-table">
+            <table>
+                <tr>
+                    <th class="table-heading">Sets</th>
+                    <th class="table-heading">Games</th>
+                    <th class="table-heading">Points</th>
+                </tr>
+                <tr>
+                    <td><span class="set-score">{{ player1Sets }}</span></td>
+                    <td><span class="game-score">{{ player1Games }}</span></td>
+                    <td>
+                        <span class="point-score">{{ getScoreLabel(player1Score) }}</span>
+                        <button class="add-button" type="button" (click)="player1Scores()"
+                            (keydown.arrowup)="player1Scores()">&#8613;</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="set-score">{{ player2Sets }}</span></td>
+                    <td><span class="game-score">{{ player2Games }}</span></td>
+                    <td>
+                        <span class="point-score">{{ getScoreLabel(player2Score) }}</span>
+                        <button class="add-button" type="button" (click)="player2Scores()"
+                            (keydown.arrowdown)="player2Scores()">&#8615;</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <button class="reset-button" type="button" (click)="resetGame()">Reset Game</button>
+    </form>
+</div>
