@@ -3,4 +3,5 @@ export interface Cycle {
     brand: string;
     stock: number;
     numBorrowed: number;
+    price: number
 }

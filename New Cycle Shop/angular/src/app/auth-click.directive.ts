@@ -11,7 +11,7 @@ export class AuthClickDirective {
 
   @HostListener('click', ['$event'])
   onClick(event: MouseEvent) {
-    if (!this.authService.isLoggedIn) {
+    if (!this.authService.isLoggedIn || this.authService.isExpired()) {
       event.preventDefault();
       this.router.navigate(['/login']);
     }

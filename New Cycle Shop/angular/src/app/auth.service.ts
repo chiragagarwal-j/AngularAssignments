@@ -11,8 +11,15 @@ import { Router } from '@angular/router';
 export class AuthService {
   private authUrl = 'http://localhost:8080/api/auth';
   private _isLoggedIn$: boolean = false;
+  private _payload: Record<string, any> = {};
   constructor(private http: HttpClient, private router: Router) { 
     this._isLoggedIn$ = !!localStorage.getItem('token');
+    if (this._isLoggedIn$) {
+      const token = localStorage.getItem('token');
+      const payload = token?.split('.')[1];
+      this._payload = JSON.parse(atob(payload as string));
+      console.log(this._payload);
+    }
   }
 
   get isLoggedIn(): boolean {
@@ -39,17 +46,17 @@ export class AuthService {
 
   isUserAdmin(): boolean {
     if (!this._isLoggedIn$) return false;
-    const token = localStorage.getItem('token');
-    const payload = token?.split('.')[1];
-    const decodedPayload: Record<string, string> = JSON.parse(atob(payload as string));
-    return decodedPayload['scope'] === 'ROLE_ADMIN';
+    return this._payload['role'] === 'ROLE_ADMIN';
   }
 
   getUsername(): string {
     if (!this._isLoggedIn$) return 'anonymous';
-    const token = localStorage.getItem('token');
-    const payload = token?.split('.')[1];
-    const decodedPayload: Record<string, string> = JSON.parse(atob(payload as string));
-    return decodedPayload['sub'];
+    return this._payload['sub'];
+  }
+
+  isExpired(): boolean {
+    console.log(this._payload);
+    const {exp} = this._payload;
+    return Date.now()  >= exp * 1000;
   }
 }
