@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,7 +19,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
-import static org.springframework.security.config.Customizer.withDefaults;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -33,6 +33,7 @@ import com.spring.learningRest.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class BasicConfiguration {
 
     @Value("${jwt.public.key}")
@@ -40,6 +41,10 @@ public class BasicConfiguration {
 
     @Value("${jwt.private.key}")
     RSAPrivateKey priv;
+
+
+    @Autowired
+    private CorsConfig corsConfig;
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
@@ -58,13 +63,10 @@ public class BasicConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors ->  cors.configurationSource(corsConfig))
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/api/cycleStocks/register","/api/cycleStocks","/api/cycleStocks/{id}/borrow",
-                        "/api/cycleStocks/{id}/return","/api/cycleStocks/restock", "/api/auth/token").permitAll()
+                        .requestMatchers("/api/cycles/list", "/api/auth/**").permitAll()
                         .anyRequest().authenticated())
-                .logout(withDefaults())
-                .httpBasic(withDefaults())
-                // .formLogin(withDefaults())
                 .oauth2ResourceServer(
                         oauth2ResourceServer -> oauth2ResourceServer.jwt(jwt -> jwt.decoder(jwtDecoder())))
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
