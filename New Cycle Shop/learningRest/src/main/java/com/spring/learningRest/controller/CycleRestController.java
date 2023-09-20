@@ -98,7 +98,6 @@ public class CycleRestController {
 
     @PostMapping("cart/{id}/add")
     @ResponseBody
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_USER')")
     @Transactional
     ResponseEntity<String> addToCart(@PathVariable("id") int id, @RequestParam("quantity") int quantity) {
         Optional<Cycle> existingCycle = cycleRepository.findById(id);
@@ -192,6 +191,7 @@ public class CycleRestController {
         Cart cart = cartRepository.findByUser(user).orElseGet(Cart::new);
 
         CartDTO cartDTO = new CartDTO();
+        cartDTO.setId(cart.getId());
         cartDTO.setCartItems(cart.getCartItems());
         cartDTO.setTotalPrice(cart.getCartItems().stream().mapToInt(CartItem::getTotalPrice).sum());
         cartDTO.setTotalQuantity(cart.getCartItems().stream().mapToInt(CartItem::getQuantity).sum());
