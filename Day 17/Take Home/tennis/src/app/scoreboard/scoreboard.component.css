@@ -10,6 +10,14 @@
   h3 {
     color: white;
   }
+
+  .large-table {
+    font-size: 18px;
+  }
+  
+  .large-table th, .large-table td {
+    padding: 10px;
+  }
   
   .center-table {
     margin: auto;
