@@ -4,14 +4,17 @@ import com.spring.learningRest.business.CartDTO;
 import com.spring.learningRest.entity.Cart;
 import com.spring.learningRest.entity.CartItem;
 import com.spring.learningRest.entity.Cycle;
+import com.spring.learningRest.entity.Order;
 import com.spring.learningRest.entity.User;
 import com.spring.learningRest.repository.CartItemRepository;
 import com.spring.learningRest.repository.CartRepository;
 // import com.spring.learningRest.entity.User;
 import com.spring.learningRest.repository.CycleRepository;
+import com.spring.learningRest.repository.OrderRepository;
 // import com.spring.learningRest.repository.UserRepository;
 // import com.spring.learningRest.service.UserService;
 import com.spring.learningRest.repository.UserRepository;
+import com.spring.learningRest.service.CartService;
 
 import jakarta.transaction.Transactional;
 
@@ -37,13 +40,15 @@ public class CycleRestController {
     private CycleRepository cycleRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private OrderRepository orderRepository;
 
     @Autowired
     private CartRepository cartRepository;
 
+
+
     @Autowired
-    private CartItemRepository cartItemRepository;
+    private CartService cartService;
 
     @GetMapping("/list")
     public List<Cycle> getAllCycleStocks() {
@@ -99,85 +104,20 @@ public class CycleRestController {
     @PostMapping("cart/{id}/add")
     @ResponseBody
     @Transactional
-    ResponseEntity<String> addToCart(@PathVariable("id") int id, @RequestParam("quantity") int quantity) {
-        Optional<Cycle> existingCycle = cycleRepository.findById(id);
-        if (existingCycle.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cycle not found");
-        }
-        if (quantity <= 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity must be positive");
-        }
-        Cycle cycle = existingCycle.get();
-        if (cycle.getNumAvailable() < quantity) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not enough cycles available");
-        }
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByName(authentication.getName()).get();
-
-        Cart cart = cartRepository.findByUser(user).orElseGet(Cart::new);
-
-        Optional<CartItem> existingCartItem = cart.getCartItems().stream()
-                .filter(item -> item.getCycle().getId() == cycle.getId())
-                .findFirst();
-
-        if (existingCartItem.isPresent()) {
-            CartItem cartItem = existingCartItem.get();
-            cartItem.setQuantity(cartItem.getQuantity() + quantity);
-            cartItem.setTotalPrice(cycle.getPrice() * cartItem.getQuantity());
-        } else {
-            CartItem cartItem = new CartItem();
-            cartItem.setCycle(cycle);
-            cartItem.setQuantity(quantity);
-            cartItem.setTotalPrice(cycle.getPrice() * quantity);
-            cart.getCartItems().add(cartItem);
-        }
-        cartRepository.save(cart);
-        return ResponseEntity.ok("Cycle added to cart");
+    ResponseEntity<?> addToCart(@PathVariable("id") int id, @RequestParam("quantity") int quantity) {
+        Cart cart = cartService.addToCart(id, quantity);
+        cartService.save(cart);
+        return ResponseEntity.ok().body(null);
     }
 
     @PostMapping("cart/{id}/remove")
     @ResponseBody
     @PreAuthorize("hasAuthority('SCOPE_ROLE_USER')")
     @Transactional
-    ResponseEntity<String> removeFromCart(@PathVariable("id") int id, @RequestParam("quantity") int quantity) {
-        Optional<Cycle> existingCycle = cycleRepository.findById(id);
-        if (existingCycle.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cycle not found");
-        }
-        if (quantity <= 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity must be positive");
-        }
-        Cycle cycle = existingCycle.get();
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByName(authentication.getName()).get();
-
-        Cart cart = cartRepository.findByUser(user).orElseGet(Cart::new);
-
-        Optional<CartItem> existingCartItem = cart.getCartItems().stream()
-                .filter(item -> item.getCycle().getId() == cycle.getId())
-                .findFirst();
-
-        if (existingCartItem.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cycle not in cart");
-        }
-
-        CartItem cartItem = existingCartItem.get();
-        if (cartItem.getQuantity() < quantity) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not enough cycles in cart");
-        }
-
-        cartItem.setQuantity(cartItem.getQuantity() - quantity);
-        cartItem.setTotalPrice(cycle.getPrice() * cartItem.getQuantity());
-
-        if (cartItem.getQuantity() == 0) {
-            cart.getCartItems().remove(cartItem);
-            cartItemRepository.delete(cartItem);
-        }
-
+    ResponseEntity<CartDTO> removeFromCart(@PathVariable("id") int id, @RequestParam("quantity") int quantity) {
+        Cart cart = cartService.removeFromCart(id, quantity);
         cartRepository.save(cart);
-        return ResponseEntity.ok("Cycle removed from cart");
+        return ResponseEntity.ok(cartService.getCart());
     }
 
     @GetMapping("cart")
@@ -185,31 +125,35 @@ public class CycleRestController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_USER')")
     @Transactional
     ResponseEntity<CartDTO> getCart() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByName(authentication.getName()).get();
-
-        Cart cart = cartRepository.findByUser(user).orElseGet(Cart::new);
-
-        CartDTO cartDTO = new CartDTO();
-        cartDTO.setId(cart.getId());
-        cartDTO.setCartItems(cart.getCartItems());
-        cartDTO.setTotalPrice(cart.getCartItems().stream().mapToInt(CartItem::getTotalPrice).sum());
-        cartDTO.setTotalQuantity(cart.getCartItems().stream().mapToInt(CartItem::getQuantity).sum());
-        return ResponseEntity.ok(cartDTO);
+        CartDTO cart = cartService.getCart();
+        return ResponseEntity.ok(cart);
     }
 
     @PostMapping("cart/checkout/{id}")
-    @ResponseBody
     @PreAuthorize("hasAuthority('SCOPE_ROLE_USER')")
     @Transactional
-    ResponseEntity<String> checkout(@PathVariable("id") int cartItemId) {
-
-        //TODO: single cartitem checkout, remove the cartitem from cart and add to order then decrease the stock of cycle
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByName(authentication.getName()).get();
-
-        return ResponseEntity.ok("Checkout successful");
+    ResponseEntity<CartDTO> checkout(@PathVariable("id") int cartItemId) {
+        cartService.checkout(cartItemId);
+        return ResponseEntity.ok(cartService.getCart());
     }
 
+    @PostMapping("cart/checkout/all")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_USER')")
+    @Transactional
+    ResponseEntity<CartDTO> checkoutAll() {
+        cartService.checkoutAll();
+        return ResponseEntity.ok(cartService.getCart());
+    }
 
+    @GetMapping("/orders")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    ResponseEntity<List<Order>> getOrders() {
+        return ResponseEntity.ok(orderRepository.findAll());
+    }
+
+    // @GetMapping("/orders/{id}")
+    // @PreAuthorize("hasAuthority('SCOPE_ROLE_USER')")
+    // ResponseEntity<List<Order>> getOrdersByUser(@PathVariable("id") int id) {
+        
+    // }
 }
