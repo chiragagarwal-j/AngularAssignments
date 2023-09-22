@@ -5,6 +5,7 @@ import { CyclesComponent } from './cycles/cycles.component';
 import { BaseLayoutComponent } from './base-layout/base-layout.component';
 import { SiteLayoutComponent } from './site-layout/site-layout.component';
 import { CartComponent } from './cart/cart.component';
+import { OrdersComponent } from './orders/orders.component';
 
 const routes: Routes = [
   {
@@ -19,7 +20,8 @@ const routes: Routes = [
     component: SiteLayoutComponent,
     children: [
       { path: 'cycles', component: CyclesComponent },
-      {path: 'cart', component: CartComponent}
+      {path: 'cart', component: CartComponent},
+      {path: 'orders', component: OrdersComponent}
     ]
   },
 

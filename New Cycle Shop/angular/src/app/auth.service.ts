@@ -14,11 +14,14 @@ export class AuthService {
   private _payload: Record<string, any> = {};
   constructor(private http: HttpClient, private router: Router) { 
     this._isLoggedIn$ = !!localStorage.getItem('token');
+    this.fetchPayload();
+  }
+
+  private fetchPayload(): void {
     if (this._isLoggedIn$) {
       const token = localStorage.getItem('token');
       const payload = token?.split('.')[1];
       this._payload = JSON.parse(atob(payload as string));
-      console.log(this._payload);
     }
   }
 
@@ -46,16 +49,19 @@ export class AuthService {
 
   isUserAdmin(): boolean {
     if (!this._isLoggedIn$) return false;
-    return this._payload['role'] === 'ROLE_ADMIN';
+    this.fetchPayload();
+    return this._payload['scope'] === 'ROLE_ADMIN';
   }
 
   getUsername(): string {
     if (!this._isLoggedIn$) return 'anonymous';
+    this.fetchPayload();
     return this._payload['sub'];
   }
 
   isExpired(): boolean {
-    console.log(this._payload);
+    if (!this._isLoggedIn$) return true;
+    this.fetchPayload();
     const {exp} = this._payload;
     return Date.now()  >= exp * 1000;
   }

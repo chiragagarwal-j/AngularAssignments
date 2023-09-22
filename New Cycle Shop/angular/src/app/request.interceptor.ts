@@ -11,10 +11,9 @@ import { AuthService } from './auth.service';
 @Injectable()
 export class RequestInterceptor implements HttpInterceptor {
 
-  constructor() {}
+  constructor(private authService: AuthService) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    const authService = inject(AuthService);
     const publicRequestUrls = [
       '/api/cycles/list',
       '/api/auth/*',
@@ -26,12 +25,12 @@ export class RequestInterceptor implements HttpInterceptor {
       return next.handle(request);
     }
 
-    // if (!this.authService.isLoggedIn) {
-    //   return EMPTY;
-    // }
+    if (!this.authService.isLoggedIn) {
+      return EMPTY;
+    }
     const jwtRequest = request.clone({
       setHeaders: {
-        Authorization: 'bearer ' + authService.token
+        Authorization: 'bearer ' + this.authService.token
       }
     });
 

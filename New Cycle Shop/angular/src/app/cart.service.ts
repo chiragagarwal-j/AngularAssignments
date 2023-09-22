@@ -21,9 +21,15 @@ export class CartService {
     return this.http.get<Cart>(`${this.baseUrl}/cart`);
   }
 
-  removeFromCart(id: number, quantity: number = 1): Observable<String> {
-    return this.http.post<String>(`${this.baseUrl}/cart/${id}/remove`, {}, {params: {quantity: quantity.toString()}});
+  removeFromCart(id: number, quantity: number = 1): Observable<Cart> {
+    return this.http.post<Cart>(`${this.baseUrl}/cart/${id}/remove`, {}, {params: {quantity: quantity.toString()}});
   }
 
-  //TODO: implement checkout
+  checkoutFromCart(id: number): Observable<Cart> {
+    return this.http.post<Cart>(`${this.baseUrl}/cart/checkout/${id}`, {} );
+  }
+
+  checkoutAll(): Observable<Cart> {
+    return this.http.post<Cart>(`${this.baseUrl}/cart/checkout/all`, {});
+  }
 }
