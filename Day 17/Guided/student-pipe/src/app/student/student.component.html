@@ -1,0 +1,11 @@
+<div *ngFor="let student of students">
+  <h2>{{ student.Sname }}</h2>
+
+  <p>Student ID: {{ student.Sid }}</p>
+
+  <p>Date of Birth: {{ student.dob | age }}</p>
+
+  <p>Course: {{ student.course }}</p>
+
+  <p>Fees: ${{ student.fees }}</p>
+</div>
