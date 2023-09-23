@@ -32,6 +32,6 @@ public class Cart {
     @JoinColumn(name = "price", referencedColumnName = "price")
     private int price;
 
-    private boolean remove;
+    private boolean ordered;
 
 }
