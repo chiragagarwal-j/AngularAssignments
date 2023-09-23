@@ -17,14 +17,14 @@
           <p>
             {{ cartItem.quantity }}
           </p>
-          <button class="btn-decrement">-</button>
+          <button class="btn-decrement" (click)="removeFromCart(cartItem.cycle.id)">-</button>
         </div>
       </td>
       <td>{{ cartItem.totalPrice }}</td>
       <td>
         <div class="center">
-            <button class="btn-checkout">checkout</button>
-            <button class="btn-remove">remove</button>
+            <button class="btn-checkout" (click)="checkoutFromCart(cartItem.id)">checkout</button>
+            <button class="btn-remove" (click)="removeFromCart(cartItem.cycle.id,cartItem.quantity)">remove</button>
         </div>
       </td>
     </tr>
@@ -33,5 +33,5 @@
 <div class="cart-details">
   <p>cart items: {{ cart?.totalQuantity }}</p>
   <p>cumulative price: {{ cart?.totalPrice }}</p>
-  <button class="btn-checkout">checkout all</button>
+  <button class="btn-checkout" (click)="checkoutAll()">checkout all</button>
 </div>

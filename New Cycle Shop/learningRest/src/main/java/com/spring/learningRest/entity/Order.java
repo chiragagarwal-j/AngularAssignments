@@ -21,7 +21,9 @@ public class Order {
     private User user;
     
     @ManyToOne(cascade = CascadeType.MERGE)
-    private CartItem cartItem;
+    private Cycle cycle;
+
+    private int quantity;
 
     
 }

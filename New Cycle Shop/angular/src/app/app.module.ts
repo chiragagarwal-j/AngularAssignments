@@ -13,10 +13,11 @@ import { BaseLayoutComponent } from './base-layout/base-layout.component';
 import { SiteLayoutComponent } from './site-layout/site-layout.component';
 import { AuthClickDirective } from './auth-click.directive';
 import { CartComponent } from './cart/cart.component';
+import { OrdersComponent } from './orders/orders.component';
 
 
 @NgModule({
-  declarations: [AppComponent, RegisterComponent, LoginComponent, CyclesComponent, NavbarComponent, BaseLayoutComponent, SiteLayoutComponent, AuthClickDirective, CartComponent],
+  declarations: [AppComponent, RegisterComponent, LoginComponent, CyclesComponent, NavbarComponent, BaseLayoutComponent, SiteLayoutComponent, AuthClickDirective, CartComponent, OrdersComponent],
   imports: [BrowserModule, HttpClientModule, AppRoutingModule, FormsModule],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: RequestInterceptor, multi: true }],
   bootstrap: [AppComponent]

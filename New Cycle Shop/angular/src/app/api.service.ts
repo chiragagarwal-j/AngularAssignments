@@ -41,4 +41,8 @@ export class ApiService {
 	// 		switchMap(() => this.getData())
 	// 	);
 	// }
+
+	getAllOrders(): Observable<any[]> {
+		return this.http.get<any[]>(`${this.baseUrl}/orders`);
+	}
 }

@@ -35,6 +35,6 @@ export class CyclesComponent {
   }
 
   addToCart(cycleId: number, quantity: number): void {
-    this.cartService.addToCart(cycleId,quantity).subscribe(res => console.log(res));
+    this.cartService.addToCart(cycleId,quantity).subscribe(res => alert(`${quantity} cycles added to cart`));
   }
 }

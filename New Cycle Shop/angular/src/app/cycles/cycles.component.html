@@ -7,7 +7,7 @@
       <th>Brand</th>
       <th>Price</th>
       <th>In Stock</th>
-      <th>action</th>
+      <th *ngIf="!this.authService.isUserAdmin()">action</th>
       <th *ngIf="this.authService.isUserAdmin()">Restock</th>
     </tr>
   </thead>
@@ -17,8 +17,8 @@
       <td>{{ cycle.brand }}</td>
       <td>{{cycle.price}}</td>
       <td>{{ cycle.stock }}</td>
-      <td>
-        <input type="number" min="1" [max]="cycle.stock" #quantity ngModel >
+      <td *ngIf="!this.authService.isUserAdmin()">
+        <input type="number" min="1" [max]="cycle.stock" value="1" #quantity ngModel >
         <button (click)="addToCart(cycle.id, quantity.valueAsNumber)" appAuthClick>
           Add to Cart
         </button>
