@@ -15,6 +15,10 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { CartComponent } from './cart/cart.component';
 import { BaseLayoutComponent } from './base-layout/base-layout.component';
 import { SiteLayoutComponent } from './site-layout/site-layout.component';
+import { CheckoutComponent } from './checkout/checkout.component';
+import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 @NgModule({
   declarations: [
     AppComponent,
@@ -25,7 +29,9 @@ import { SiteLayoutComponent } from './site-layout/site-layout.component';
     AuthClickDirective,
     CartComponent,
     BaseLayoutComponent,
-    SiteLayoutComponent
+    SiteLayoutComponent,
+    CheckoutComponent,
+    ConfirmationDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -33,7 +39,9 @@ import { SiteLayoutComponent } from './site-layout/site-layout.component';
     RouterModule,
     FormsModule,
     HttpClientModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    MatDialogModule,
+    BrowserAnimationsModule
   ],
   providers: [{provide:HTTP_INTERCEPTORS,useClass:RequestInterceptor,multi:true}],
   bootstrap: [AppComponent]

@@ -1,0 +1,23 @@
+<!-- post-detail.component.html -->
+<h1>Post by {{ post.author.name }}</h1>
+<p>{{ post.content }}</p>
+<!-- <p>Likes: {{ post.likeCount }}</p>
+<ul class="comments">
+  <li *ngFor="let comment of post.commentList">
+    <p>{{ comment.content }}</p>
+    <p>By: {{ comment.user.name }}</p>
+  </li>
+</ul>
+<label>Select your username</label>
+<select id="userdropdown" [(ngModel)]="selectedUserId" name="likerId">
+  <option *ngFor="let userOption of userList" [value]="userOption.id">{{ userOption.name }}</option>
+</select>
+<button (click)="likePost()">Like!</button>
+
+<label>Select your username</label>
+<select id="userdropdown" [(ngModel)]="commentForm.userId" name="userId">
+  <option *ngFor="let userOption of userList" [value]="userOption.id">{{ userOption.name }}</option>
+</select>
+<label for="commentContent">Comment</label>
+<textarea id="commentContent" [(ngModel)]="commentForm.content" name="content"></textarea>
+<button (click)="addComment()">Add Comment</button> -->

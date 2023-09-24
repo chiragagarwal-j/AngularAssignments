@@ -127,13 +127,53 @@ public class CyclesController {
 
     @GetMapping("/cart")
     public ResponseEntity<List<Cart>> getCartItems() {
-        
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         User user = userRepository.findByName(authentication.getName()).get();
         List<Cart> cartItems = cartRepository.findByUserID(user.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(cartItems);
+    }
+
+    @PostMapping("/confirmedOrder")
+    public ResponseEntity<?> confirmedOrder() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByName(authentication.getName()).orElse(null);
+
+        if (user != null) {
+            List<Cart> cartItems = cartRepository.findByUserID(user.getId());
+
+            for (Cart cartItem : cartItems) {
+                Cycle cycle = cyclesRepository.findById(cartItem.getCycleId()).orElse(null);
+
+                if (cycle != null) {
+                    int currentQuantity = cycle.getQuantity();
+                    int orderedQuantity = cartItem.getQuantity();
+
+                    if (currentQuantity >= orderedQuantity) {
+                        cycle.setQuantity(currentQuantity - orderedQuantity);
+                        cycle.setNumBorrowed(cycle.getNumBorrowed() + orderedQuantity);
+
+                        cartItem.setOrdered(true);
+                        cartRepository.save(cartItem);
+                        cyclesRepository.save(cycle);
+                    } else {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body("Insufficient quantity for cycle with ID: " + cycle.getId());
+                    }
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK).body("Order confirmed successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+    @GetMapping("/getBill")
+    public ResponseEntity<List<Cart>> getBill() {
+        List<Cart> orderedCartItems = cartRepository.findByOrdered(true);
+        return ResponseEntity.status(HttpStatus.OK).body(orderedCartItems);
     }
 
 }

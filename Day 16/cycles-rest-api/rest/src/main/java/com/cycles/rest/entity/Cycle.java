@@ -20,7 +20,7 @@ public class Cycle {
     private int quantity;
     private int price;
     private int numBorrowed = 0;
-    private boolean addToCart;
+    // private boolean addToCart;
 
     public int getNumAvailable() {
         return quantity - numBorrowed;
