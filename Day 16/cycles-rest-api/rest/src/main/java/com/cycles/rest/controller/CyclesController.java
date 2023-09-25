@@ -1,7 +1,6 @@
 package com.cycles.rest.controller;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,11 +18,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.cycles.rest.dto.AddToCartRequest;
+import com.cycles.rest.dto.CartUpdateRequest;
 import com.cycles.rest.entity.Cart;
 import com.cycles.rest.entity.Cycle;
+import com.cycles.rest.entity.Order;
 import com.cycles.rest.entity.User;
 import com.cycles.rest.repository.CartRepository;
 import com.cycles.rest.repository.CyclesRepository;
+import com.cycles.rest.repository.OrderRepository;
 import com.cycles.rest.repository.UserRepository;
 
 @RestController
@@ -39,27 +43,14 @@ public class CyclesController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
     @GetMapping("/list")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     List<Cycle> getAllCycles() {
         return cyclesRepository.findAll();
-    }
-
-    @PostMapping("/{id}/borrow")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    Cycle borrowCycle(@PathVariable("id") Long id) {
-        Optional<Cycle> cycle = cyclesRepository.findById(id);
-        if (cycle.isPresent()) {
-            Cycle c = cycle.get();
-            if (c.getNumAvailable() > 0) {
-                c.setNumBorrowed(c.getNumBorrowed() + 1);
-            }
-            return cyclesRepository.save(c);
-        } else {
-            return null;
-        }
     }
 
     @PostMapping("/{id}/return")
@@ -96,32 +87,43 @@ public class CyclesController {
     @PostMapping("/addToCart")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<String> addingToCart(@RequestBody Map<String, Integer> requestBody) {
-        long id = requestBody.getOrDefault("id", 0);
-        int quantity = requestBody.getOrDefault("quantity", 0);
+    public ResponseEntity<?> addToCart(@RequestBody AddToCartRequest request) {
+        long id = request.getId();
+        int quantity = request.getQuantity();
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByName(authentication.getName()).orElse(null);
 
-        User user = userRepository.findByName(authentication.getName()).get();
+        if (user != null) {
+            Optional<Cycle> cycle = cyclesRepository.findById(id);
 
-        Optional<Cycle> cycle = cyclesRepository.findById(id);
+            if (cycle.isPresent()) {
+                Cycle c = cycle.get();
 
-        if (cycle.isPresent()) {
-            Cycle c = cycle.get();
+                Optional<Cart> existingCartItem = cartRepository.findByUserIDAndCycleIdAndOrdered(user.getId(), id,
+                        false);
 
-            Cart cartItem = new Cart();
-            cartItem.setCycleId(id);
-            cartItem.setUserID(user.getId());
-            cartItem.setColor(c.getColor());
-            cartItem.setBrand(c.getBrand());
-            cartItem.setQuantity(quantity);
-            cartItem.setPrice(c.getPrice());
+                if (existingCartItem.isPresent()) {
+                    Cart cartItem = existingCartItem.get();
+                    cartItem.setQuantity(cartItem.getQuantity() + quantity);
+                    cartRepository.save(cartItem);
+                } else {
+                    Cart cartItem = new Cart();
+                    cartItem.setCycleId(id);
+                    cartItem.setUserID(user.getId());
+                    cartItem.setColor(c.getColor());
+                    cartItem.setBrand(c.getBrand());
+                    cartItem.setQuantity(quantity);
+                    cartItem.setPrice(c.getPrice());
 
-            cartRepository.save(cartItem);
-
-            return ResponseEntity.status(HttpStatus.OK).body("Cycle added to cart");
+                    cartRepository.save(cartItem);
+                }
+                return ResponseEntity.status(HttpStatus.OK).body(null);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cycle not found");
+            }
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cycle not found");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
     }
 
@@ -143,6 +145,7 @@ public class CyclesController {
 
         if (user != null) {
             List<Cart> cartItems = cartRepository.findByUserID(user.getId());
+            long totalPrice = 0;
 
             for (Cart cartItem : cartItems) {
                 Cycle cycle = cyclesRepository.findById(cartItem.getCycleId()).orElse(null);
@@ -152,21 +155,72 @@ public class CyclesController {
                     int orderedQuantity = cartItem.getQuantity();
 
                     if (currentQuantity >= orderedQuantity) {
-                        cycle.setQuantity(currentQuantity - orderedQuantity);
                         cycle.setNumBorrowed(cycle.getNumBorrowed() + orderedQuantity);
 
                         cartItem.setOrdered(true);
                         cartRepository.save(cartItem);
                         cyclesRepository.save(cycle);
+
+                        totalPrice += (orderedQuantity * cycle.getPrice());
                     } else {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                 .body("Insufficient quantity for cycle with ID: " + cycle.getId());
                     }
                 }
             }
-            return ResponseEntity.status(HttpStatus.OK).body("Order confirmed successfully");
+
+            Order order = new Order();
+            order.setUser(user);
+            order.setTotalPrice(totalPrice);
+            orderRepository.save(order);
+
+            return ResponseEntity.status(HttpStatus.OK).body(null);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+    @PostMapping("/updateCartItemQuantity")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResponseEntity<?> updateCartItemQuantity(@RequestBody CartUpdateRequest request) {
+        long cycleId = request.getCycleId();
+        int newQuantity = request.getNewQuantity();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByName(authentication.getName()).orElse(null);
+        Optional<Cart> cartItemOptional = cartRepository.findByUserIDAndCycleIdAndOrdered(user.getId(), cycleId, false);
+
+        if (cartItemOptional.isPresent()) {
+            Cart cartItem = cartItemOptional.get();
+            cartItem.setQuantity(newQuantity);
+            cartRepository.save(cartItem);
+            return ResponseEntity.status(HttpStatus.OK).body(null);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart item not found");
+        }
+    }
+
+    @PostMapping("/removeFromCart")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResponseEntity<?> removeFromCart(@RequestBody Long cycleid) {
+        long cycleId = cycleid;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByName(authentication.getName()).orElse(null);
+
+        if (user != null) {
+            Optional<Cart> cartItemOptional = cartRepository.findByUserIDAndCycleIdAndOrdered(user.getId(), cycleId,
+                    false);
+
+            if (cartItemOptional.isPresent()) {
+                cartRepository.delete(cartItemOptional.get());
+                return ResponseEntity.status(HttpStatus.OK).body(null);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart item not found");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
     }
 
