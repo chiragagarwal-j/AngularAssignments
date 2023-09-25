@@ -9,7 +9,7 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 
 @Entity
-@Table(name = "Cycles", uniqueConstraints = { @UniqueConstraint(columnNames = { "brand" }) })
+@Table(name = "cycles", uniqueConstraints = { @UniqueConstraint(columnNames = { "brand" }) })
 @Data
 public class Cycle {
     @Id
@@ -17,10 +17,13 @@ public class Cycle {
     private int id;
 
     private String brand;
-
+    
     private int stock;
+    
     private int numBorrowed;
+    
     private int price;
+    
     public int getNumAvailable() {
         return stock - numBorrowed;
     }

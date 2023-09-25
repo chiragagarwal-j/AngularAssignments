@@ -2,8 +2,6 @@ package com.spring.learningRest.service;
 
 import java.util.Optional;
 
-import javax.swing.text.html.Option;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,64 +44,53 @@ public class CartService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findByName(authentication.getName()).get();
         Cart cart = cartRepository.findByUser(user).orElseGet(Cart::new);
-
         CartDTO cartDTO = new CartDTO();
         cartDTO.setId(cart.getId());
         cartDTO.setCartItems(cart.getCartItems());
         cartDTO.setTotalPrice(cart.getCartItems().stream().mapToInt(CartItem::getTotalPrice).sum());
         cartDTO.setTotalQuantity(cart.getCartItems().stream().mapToInt(CartItem::getQuantity).sum());
-
         return cartDTO;
     }
 
-    public void save(Cart cart) {
-        cartRepository.save(cart);
+    public Cart save(Cart cart) {
+        return cartRepository.save(cart);
     }
 
-    public Cart addToCart(int id, int quantity) {
-        Optional<Cycle> existingCycle = cycleRepository.findById(id);
-
-        Cycle cycle = existingCycle.get();
+    public Cart addToCart(int cycleId, int quantity) {
+        Cycle cycle = cycleRepository.findById(cycleId).orElseThrow(() -> new RuntimeException("Cycle not found"));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByName(authentication.getName()).get();
-        Optional<Cart> existingCart = cartRepository.findByUser(user);
+        User user = userRepository.findByName(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (existingCart.isEmpty()) {
+        Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
             Cart newCart = new Cart();
             newCart.setUser(user);
             cartRepository.save(newCart);
-            existingCart = Optional.of(newCart);
-        }
-        Cart cart = existingCart.get();
-        Optional<CartItem> existingCartItem = cart.getCartItems().stream()
-                .filter(item -> item.getCycle().getId() == cycle.getId())
-                .findFirst();
+            return newCart;
+        });
 
-        if (existingCartItem.isPresent()) {
-            CartItem cartItem = existingCartItem.get();
-            int maxQuantity = cartItem.getQuantity() + quantity > cycle.getStock() ? cycle.getStock()
-                    : quantity + cartItem.getQuantity();
-            cartItem.setQuantity(maxQuantity);
-            cartItem.setTotalPrice(cycle.getPrice() * cartItem.getQuantity());
-        } else {
-            CartItem cartItem = new CartItem();
-            cartItem.setCycle(cycle);
-            cartItem.setQuantity(quantity);
-            cartItem.setTotalPrice(cycle.getPrice() * quantity);
-            cart.getCartItems().add(cartItem);
-        }
+        CartItem cartItem = cart.getCartItems().stream().filter(item -> item.getCycle().getId() == cycle.getId())
+                .findFirst().orElseGet(() -> {
+                    CartItem newCartItem = new CartItem();
+                    newCartItem.setCycle(cycle);
+                    cart.getCartItems().add(newCartItem);
+                    return newCartItem;
+                });
+
+        int maxQuantity = Math.min(quantity + cartItem.getQuantity(), cycle.getStock());
+        cartItem.setQuantity(maxQuantity);
+        cartItem.setTotalPrice(cycle.getPrice() * cartItem.getQuantity());
         return cart;
     }
 
-    public Cart removeFromCart(int id, int quantity) {
-        Optional<Cycle> existingCycle = cycleRepository.findById(id);
-        if (existingCycle.isEmpty()) {
-            return null;
-        } else if (quantity <= 0) {
+    public Cart removeFromCart(int cycleId, int quantity) {
+        if (quantity <= 0) {
             return null;
         }
-        Cycle cycle = existingCycle.get();
+    
+        Cycle cycle = cycleRepository.findById(cycleId)
+                .orElseThrow(() -> new RuntimeException("Cycle not found"));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findByName(authentication.getName()).get();
@@ -114,14 +101,17 @@ public class CartService {
                 .filter(item -> item.getCycle().getId() == cycle.getId())
                 .findFirst();
 
-        CartItem cartItem = existingCartItem.get();
-
-        cartItem.setQuantity(cartItem.getQuantity() - quantity);
-        cartItem.setTotalPrice(cycle.getPrice() * cartItem.getQuantity());
-
-        if (cartItem.getQuantity() == 0) {
-            cart.getCartItems().remove(cartItem);
-            cartItemRepository.delete(cartItem);
+        if (existingCartItem.isPresent()) {
+            CartItem cartItem = existingCartItem.get();
+            int newQuantity = cartItem.getQuantity() - quantity;
+    
+            if (newQuantity <= 0) {
+                cart.getCartItems().remove(cartItem);
+                cartItemRepository.delete(cartItem);
+            } else {
+                cartItem.setQuantity(newQuantity);
+                cartItem.setTotalPrice(cycle.getPrice() * newQuantity);
+            }
         }
         return cart;
     }
@@ -129,30 +119,30 @@ public class CartService {
     public Cart checkout(int cartItemId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findByName(authentication.getName()).get();
+
         Cart cart = cartRepository.findByUser(user).orElseGet(Cart::new);
-        Optional<CartItem> existingCartItem = cart.getCartItems().stream()
+
+        CartItem cartItem = cart.getCartItems().stream()
                 .filter(item -> item.getId() == cartItemId)
-                .findFirst();
+                .findFirst().orElseThrow(() -> new RuntimeException("Cart item not found"));
 
-        // add in it in order
-        if (existingCartItem.isPresent()) {
-            CartItem cartItem = existingCartItem.get();
-            Cycle cycle = cartItem.getCycle();
-            cycle.setStock(cycle.getStock() - cartItem.getQuantity());
-            cycleRepository.save(cycle);
-            Optional<Order> existingOrder = orderRepository.findByUserAndProductOptional(user, cycle);
-            if (existingOrder.isEmpty()) {
-                Order order = new Order();
-                int quantity = cartItem.getQuantity();
-                order.setUser(user);
-                order.setCycle(cycle);
-                order.setQuantity(quantity);
-                orderRepository.save(order);
+        Cycle cycle = cartItem.getCycle();
+        int quantity = cartItem.getQuantity();
 
-                cart.getCartItems().remove(cartItem);
-                cartItemRepository.delete(cartItem);
-            }
-        }
+        cycle.setStock(cycle.getStock() - quantity);
+        cycleRepository.save(cycle);
+
+        Order order = orderRepository.findByUserAndCycle(user, cycle).orElseGet(() -> {
+            Order newOrder = new Order();
+            newOrder.setUser(user);
+            newOrder.setCycle(cycle);
+            newOrder.setQuantity(quantity);
+            return newOrder;
+        });
+        orderRepository.save(order);
+
+        cart.getCartItems().remove(cartItem);
+        cartItemRepository.delete(cartItem);
         return cart;
     }
 
@@ -163,23 +153,21 @@ public class CartService {
 
         for (CartItem cartItem : cart.getCartItems()) {
             Cycle cycle = cartItem.getCycle();
-            cycle.setStock(cycle.getStock() - cartItem.getQuantity());
+            int quantity = cartItem.getQuantity();
+            cycle.setStock(cycle.getStock() - quantity);
             cycleRepository.save(cycle);
-            Optional<Order> existingOrder = orderRepository.findByUserAndProductOptional(user, cycle);
-            if (existingOrder.isEmpty()) {
-                Order order = new Order();
-                int quantity = cartItem.getQuantity();
-                order.setUser(user);
-                order.setCycle(cycle);
-                order.setQuantity(quantity);
-                orderRepository.save(order);
 
-                cart.getCartItems().remove(cartItem);
-                cartItemRepository.delete(cartItem);
-            }
+            Order order = orderRepository.findByUserAndCycle(user, cycle).orElseGet(() -> {
+                Order newOrder = new Order();
+                newOrder.setUser(user);
+                newOrder.setCycle(cycle);
+                newOrder.setQuantity(quantity);
+                return newOrder;
+            });
+            orderRepository.save(order);
         }
 
+        cart.getCartItems().clear();
         return cart;
-
     }
 }
