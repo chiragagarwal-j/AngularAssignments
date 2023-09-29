@@ -1,0 +1,63 @@
+.vending-machine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 20px;
+}
+
+.product-card {
+  display: inline-block;
+  vertical-align: top;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px;
+  background-color: #fff;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  width: 150px;
+  box-sizing: border-box;
+}
+
+.product-id {
+  font-weight: bold;
+  margin: 0;
+}
+
+.product-name {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+.product-quantity,
+.product-price {
+  margin: 0;
+  color: #555;
+}
+
+.cart {
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+
+.cart h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+.cart-item button {
+  background-color: #d9534f;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}

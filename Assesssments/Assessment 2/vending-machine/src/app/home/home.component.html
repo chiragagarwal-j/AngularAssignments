@@ -1,0 +1,22 @@
+<div class="vending-machine">
+    <div class="row" *ngFor="let row of products | chunk: 1">
+      <div class="col" *ngFor="let product of row">
+        <div class="product-card">
+          <p class="product-id">Product ID: {{ product.id }}</p>
+          <h5 class="product-name">{{ product.name }}</h5>
+          <p class="product-quantity">Quantity: {{ product.quantity }}</p>
+          <p class="product-price">Price: {{ product.price | currency:'INR':'symbol' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div>
+    <h2>Enter Product ID</h2>
+    <label for="productId">Product ID:</label>
+    <input type="number" id="productId" name="productId" #id ngModel>
+    <button (click)="navigateToSection(id.valueAsNumber)">Submit</button>
+  </div>
+  
+  <app-section></app-section>
+  

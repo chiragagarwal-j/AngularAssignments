@@ -1,0 +1,38 @@
+<div class="vending-machine">
+  <div class="row">
+    <div class="col" *ngFor="let product of sectionProducts">
+      <div class="product-card">
+        <p class="product-id">Product ID: {{ product.id }}</p>
+        <h5 class="product-name">{{ product.name }}</h5>
+        <p class="product-quantity">Quantity: {{ product.quantity }}</p>
+        <p class="product-price">Price: {{ product.price | currency:'INR':'symbol' }}</p>
+
+        <select [(ngModel)]="product.selectedQuantity" (change)="updateTotalAmount()">
+          <option *ngFor="let option of generateQuantityOptions(product.quantity)" [value]="option">{{ option }}
+          </option>
+        </select>
+
+        <button (click)="addToCart(product)">Buy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="cart">
+  <h2>Your Cart</h2>
+  <div *ngFor="let product of selectedProducts">
+    <div class="cart-item">
+      <p>{{ product.name }}</p>
+      <p>Quantity: {{ product.selectedQuantity }}</p>
+      <p>{{ product.price | currency:'INR':'symbol' }}</p>
+      <button (click)="removeFromCart(product)">Remove</button>
+    </div>
+  </div>
+  <p>Total Amount: {{ totalAmount | currency:'INR':'symbol' }}</p>
+</div>
+
+<div class="checkout-button">
+  <button (click)="checkout()">Checkout</button>
+</div>

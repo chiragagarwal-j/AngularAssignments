@@ -1,0 +1,59 @@
+.vending-machine {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+  }
+  
+  .product-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    background-color: #f9f9f9;
+    width: 200px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .product-name {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin: 5px 0;
+  }
+  
+  .product-quantity,
+  .product-price {
+    font-size: 1rem;
+    margin: 5px 0;
+  }
+  
+  /* Styling for the enter product ID section */
+  h2 {
+    margin-top: 20px;
+    font-size: 1.5rem;
+  }
+  
+  /* Styling for the product ID input and button */
+  label {
+    font-size: 1.2rem;
+    margin-right: 10px;
+  }
+  
+  input[type="number"] {
+    font-size: 1.2rem;
+    padding: 5px;
+  }
+  
+  button {
+    font-size: 1.2rem;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  

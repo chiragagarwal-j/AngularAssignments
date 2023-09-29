@@ -1,0 +1,23 @@
+<h1>Post by {{ post?.author?.name }}</h1>
+<p>{{ post?.content }}</p>
+
+<form [formGroup]="commentFormg">
+  <textarea formControlName="commentText" (input)="onCommentInputChange($event)"></textarea>
+  <button type="button" (click)="addComment()">Comment</button>
+</form>
+
+<ul *ngIf="showUserSuggestions">
+  <li *ngFor="let user of userSuggestions">
+    <button (click)="insertSuggestion(user)">{{ user.name }}</button>
+  </li>
+</ul>
+
+<div class="comments">
+  <h2>My Comments</h2>
+  <ul>
+    <li *ngFor="let comment of comments">
+      <p>{{comment.content}}</p>
+      <p>By: {{ comment.user.name }}</p>
+    </li>
+  </ul>
+</div>
