@@ -33,8 +33,6 @@ public class CycleRestController {
     @Autowired
     private CartRepository cartRepository;
 
-
-
     @Autowired
     private CartService cartService;
 
@@ -110,7 +108,6 @@ public class CycleRestController {
 
     @GetMapping("cart")
     @ResponseBody
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_USER')")
     @Transactional
     ResponseEntity<CartDTO> getCart() {
         CartDTO cart = cartService.getCart();
@@ -139,9 +136,9 @@ public class CycleRestController {
         return ResponseEntity.ok(orderRepository.findAll());
     }
 
-    // @GetMapping("/orders/{id}")
-    // @PreAuthorize("hasAuthority('SCOPE_ROLE_USER')")
-    // ResponseEntity<List<Order>> getOrdersByUser(@PathVariable("id") int id) {
-        
-    // }
+    @GetMapping("/orders/user")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_USER')")
+    ResponseEntity<List<Order>> getOrdersByUser() {
+        return ResponseEntity.ok(cartService.getOrdersByUser());
+    }
 }

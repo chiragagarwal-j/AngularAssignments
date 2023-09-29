@@ -1,5 +1,6 @@
 package com.spring.learningRest.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,5 +170,12 @@ public class CartService {
 
         cart.getCartItems().clear();
         return cart;
+    }
+
+
+    public List<Order> getOrdersByUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByName(authentication.getName()).get();
+        return orderRepository.findByUser(user);
     }
 }

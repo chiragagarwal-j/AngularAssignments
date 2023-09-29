@@ -15,15 +15,10 @@ public class Cycle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
     private String brand;
-    
     private int stock;
-    
     private int numBorrowed;
-    
     private int price;
-    
     public int getNumAvailable() {
         return stock - numBorrowed;
     }

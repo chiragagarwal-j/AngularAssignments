@@ -10,13 +10,11 @@ import com.spring.learningRest.controller.exceptions.NotFoundException;
 import com.spring.learningRest.entity.User;
 import com.spring.learningRest.repository.UserRepository;
 
-
-
 @Service
 public class UserService {
 
-    private BCryptPasswordEncoder passwordEncoder;
     private UserRepository userRepository;
+    private BCryptPasswordEncoder passwordEncoder;
 
     public UserService(@Autowired UserRepository userRepository) {
         this.userRepository = userRepository;
