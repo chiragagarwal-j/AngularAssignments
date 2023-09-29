@@ -6,8 +6,11 @@ import { BaseLayoutComponent } from './base-layout/base-layout.component';
 import { SiteLayoutComponent } from './site-layout/site-layout.component';
 import { CartComponent } from './cart/cart.component';
 import { OrdersComponent } from './orders/orders.component';
+import { UserOrdersComponent } from './user-orders/user-orders.component';
+import { AuthGuard } from './auth.guard';
 
 const routes: Routes = [
+  { path: '', redirectTo: '/cycles', pathMatch: 'full' },
   {
     path: '',
     component: BaseLayoutComponent,
@@ -20,13 +23,11 @@ const routes: Routes = [
     component: SiteLayoutComponent,
     children: [
       { path: 'cycles', component: CyclesComponent },
-      {path: 'cart', component: CartComponent},
-      {path: 'orders', component: OrdersComponent}
+      { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
+      { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },
+      { path: 'placed-orders', component: UserOrdersComponent, canActivate: [AuthGuard] },
     ]
   },
-
-  {path: '', redirectTo: '/cycles', pathMatch: 'full'}
-
 ];
 
 @NgModule({

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { CartService } from '../cart.service';
-import { Cart } from '../Cart';
+import { CartService } from '../services/cart.service';
+import { Cart } from '../models/cart';
+import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-cart',
@@ -10,7 +11,7 @@ import { Cart } from '../Cart';
 export class CartComponent implements OnInit {
   cart?: Cart;
 
-  constructor(private cartService: CartService) { }
+  constructor(private cartService: CartService, public auth: AuthService) { }
   ngOnInit(): void {
     this.getCart();
   }
@@ -26,6 +27,7 @@ export class CartComponent implements OnInit {
   checkoutFromCart(id: number): void {
     this.cartService.checkoutFromCart(id).subscribe(res => this.cart = res);
   }
+
   checkoutAll(): void {
     this.cartService.checkoutAll().subscribe(res => this.cart = res);
   }

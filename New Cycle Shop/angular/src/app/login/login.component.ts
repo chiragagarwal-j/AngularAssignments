@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../auth.service';
-import { LoginForm } from '../login-form';
+import { AuthService } from '../services/auth.service';
+import { LoginForm } from '../models/login-form';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-login',
@@ -9,14 +10,14 @@ import { LoginForm } from '../login-form';
 })
 export class LoginComponent {
 
-  constructor(private authService: AuthService) {
-
-  }
+  constructor(private authService: AuthService, private location: Location) { }
 
   login(loginForm: any): void {
     if (loginForm.invalid) return;
-    console.log(loginForm.value)
     this.authService.login(loginForm.value as LoginForm).subscribe();
   }
-  
+
+  goBack(): void {
+    this.location.back();
+  }
 }

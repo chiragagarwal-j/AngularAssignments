@@ -1,5 +1,5 @@
 import { Directive, HostListener } from '@angular/core';
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
 import { Router } from '@angular/router';
 
 @Directive({
@@ -11,7 +11,7 @@ export class AuthClickDirective {
 
   @HostListener('click', ['$event'])
   onClick(event: MouseEvent) {
-    if (!this.authService.isLoggedIn || this.authService.isExpired()) {
+    if (!this.authService.isLoggedIn) {
       event.preventDefault();
       this.router.navigate(['/login']);
     }
