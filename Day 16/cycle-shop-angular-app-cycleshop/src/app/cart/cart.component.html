@@ -12,7 +12,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let item of cartItems">
+      <tr *ngFor="let item of filteredData">
         <td>
           <img src="https://cdn.pixabay.com/photo/2013/07/13/13/43/racing-bicycle-161449_640.png" class="cart-item-image" alt="" />
         </td>
@@ -23,12 +23,12 @@
         <td>{{ item.price }}</td>
         <td>
           <div class="quantity-dropdown">
-            <select name="quantity" [(ngModel)]="item.quantity">
+            <select name="quantity" [(ngModel)]="item.quantity" (change)="updateCartItemQuantity(item.cycleId, item.quantity)">
               <option *ngFor="let i of quantityOptions" [value]="i">{{ i }}</option>
-            </select>
+            </select>            
           </div>
         </td>
-        <td>{{ item.price * item.quantity }}</td>
+        <td>{{ item.price * item.quantity }}<button (click)="removeFromCart(item.cycleId)">🗑️</button></td>
       </tr>
     </tbody>
   </table>

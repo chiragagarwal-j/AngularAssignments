@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CyclesService } from '../service/cycles.service';
 import { CartItem } from '../models/CartItems';
 import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog'; // Import MatDialog
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component'; // Import the ConfirmationDialogComponent
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-cart',
@@ -12,12 +12,14 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 })
 export class CartComponent implements OnInit {
   cartItems: CartItem[] = [];
+  filteredData: any;
+  totalPrice: number = 0;
 
   constructor(
     private cyclesService: CyclesService,
     private router: Router,
-    private dialog: MatDialog // Inject MatDialog
-  ) {}
+    private dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
     this.getCartItems();
@@ -26,32 +28,46 @@ export class CartComponent implements OnInit {
   getCartItems(): void {
     this.cyclesService.getCartItems().subscribe((cartItems) => {
       this.cartItems = cartItems;
+      this.filteredData = cartItems.filter(item => !item.ordered)
     });
   }
 
-  quantityOptions: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
+  quantityOptions: number[] = Array.from({ length:20 }, (_, i) => i + 1);
 
   calculateTotalPrice(): number {
-    let totalPrice = 0;
+    this.totalPrice = 0;
     for (const item of this.cartItems) {
-      totalPrice += item.price * item.quantity;
+      if (item.ordered === false) {
+        this.totalPrice += item.price * item.quantity;
+      }
+
     }
-    return totalPrice;
+    return this.totalPrice;
+  }
+
+  removeFromCart(cycleId: number) {
+    this.cyclesService.removeFromCart(cycleId)
+      .subscribe(response => {
+        this.getCartItems();
+      });
+  }
+
+  updateCartItemQuantity(cycleId: number, newQuantity: number) {
+    this.cyclesService.updateCartItemQuantity(cycleId, newQuantity).subscribe(
+      (response) => { }
+    );
   }
 
   goToCheckout(): void {
-    // Open the confirmation dialog
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '400px', // Set your desired width
-      height: '200px', // Set your desired height
+      width: '400px',
+      height: '200px',
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        // User confirmed, proceed with checkout
-        this.router.navigate(['/checkout']);
+        this.router.navigate(['/cycles']);
       }
-      // Otherwise, do nothing (user canceled)
     });
   }
 }

@@ -38,6 +38,7 @@ export class AuthService {
   logout(): void {
     this.storage.remove('token');
     this._isLoggedIn$ = false;
+    this.router.navigate(['/login']);
   }
 
   isUserAdmin(): boolean {

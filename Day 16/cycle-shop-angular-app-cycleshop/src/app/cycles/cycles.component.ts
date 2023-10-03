@@ -2,26 +2,24 @@ import { Component, OnInit } from '@angular/core';
 import { CyclesService } from '../service/cycles.service';
 import { Cycle } from '../models/cycle';
 import { AuthService } from '../service/auth.service';
+import { MatDialog } from '@angular/material/dialog';
+import { AddtocartDialogComponent } from '../addtocart-dialog/addtocart-dialog.component';
 import { faCartShopping, faArrowUp, faArrowDown, faTachographDigital } from '@fortawesome/free-solid-svg-icons';
-import { ConcreteCycle } from '../models/ConcreteCycle';
+
 @Component({
   selector: 'app-cycles',
   templateUrl: './cycles.component.html',
   styleUrls: ['./cycles.component.css']
 })
-
 export class CyclesComponent implements OnInit {
-
   cycles: Cycle[] = [];
-  cyc: ConcreteCycle;
-  quantityValue: number = 0;
+  quantityValues: number[] = [];
   faCartShopping = faCartShopping;
   faArrowUp = faArrowUp;
   faArrowDown = faArrowDown;
   quantityOptions: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
 
-  constructor(private cyclesService: CyclesService, public authService: AuthService) {
-    this.cyc = new ConcreteCycle();
+  constructor(private cyclesService: CyclesService, public authService: AuthService, private dialog: MatDialog) {
   }
 
   ngOnInit(): void {
@@ -30,7 +28,9 @@ export class CyclesComponent implements OnInit {
 
   getCycles(): void {
     this.cyclesService.getCycles()
-      .subscribe(cycles => this.cycles = cycles);
+      .subscribe(cycles => {
+        this.cycles = cycles.map(cycle => ({ ...cycle, selectedQuantity: 1 }));
+      });
   }
 
   parseQuantity(qtyString: string): number {
@@ -40,29 +40,32 @@ export class CyclesComponent implements OnInit {
   addToCart(id: number, quantity: number) {
     this.cyclesService.addToCart(id, quantity)
       .subscribe(cycle => {
+        this.openAddToCartDialog();
         console.log('Added to cart:', cycle);
+        // Close the dialog after 1 second
+        setTimeout(() => {
+          this.dialog.closeAll();
+        }, 1000);
       });
   }
 
-  borrow(id: number): void {
-    this.cyclesService.borrowCycle(id)
-      .subscribe(cycle => {
-        this.cycles = this.cycles.map(c => { return c.id === cycle.id ? cycle : c }) as Cycle[];
-      });
-  }
-
-  return(id: number): void {
-    this.cyclesService.returnCycle(id)
-      .subscribe(cycle => {
-        this.cycles = this.cycles.map(c => { return c.id === cycle.id ? cycle : c }) as Cycle[];
-      });
+  openAddToCartDialog() {
+    this.dialog.open(AddtocartDialogComponent, {
+      width: '200px',
+      disableClose: true,
+    });
   }
 
   restock(id: number, quantity: number): void {
     console.log(id, quantity);
     this.cyclesService.restockCycle(id, quantity)
       .subscribe(cycle => {
-        this.cycles = this.cycles.map(c => { return c.id === cycle.id ? cycle : c }) as Cycle[];
+        // Update the quantity for the specific cycle
+        const index = this.cycles.findIndex(c => c.id === cycle.id);
+        if (index !== -1) {
+          // Assuming there's a property called 'quantity' in your Cycle model
+          this.cycles[index].quantity = cycle.quantity;
+        }
       });
   }
 }

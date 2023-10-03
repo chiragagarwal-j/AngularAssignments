@@ -5,5 +5,5 @@ export interface Cycle {
     quantity: number;
     numBorrowed: number;
     price: number;
-    selectedQuantity?: number;
+    selectedQuantity: number;
 }

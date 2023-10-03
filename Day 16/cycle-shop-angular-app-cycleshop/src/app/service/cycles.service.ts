@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Cycle } from '../models/cycle';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { CartItem } from '../models/CartItems';
 
 
@@ -10,19 +10,10 @@ import { CartItem } from '../models/CartItems';
 })
 export class CyclesService {
   baseUrl = 'http://localhost:8080/api/cycles';
-
   constructor(private http: HttpClient) { }
 
   getCycles(): Observable<Cycle[]> {
     return this.http.get<Cycle[]>(`${this.baseUrl}/list`);
-  }
-
-  borrowCycle(id: number): Observable<Cycle> {
-    return this.http.post<Cycle>(`${this.baseUrl}/${id}/borrow`, {});
-  }
-
-  returnCycle(id: number): Observable<Cycle> {
-    return this.http.post<Cycle>(`${this.baseUrl}/${id}/return`, {});
   }
 
   restockCycle(id: number, quantity: number): Observable<Cycle> {
@@ -41,6 +32,19 @@ export class CyclesService {
 
   getCartItems(): Observable<CartItem[]> {
     return this.http.get<CartItem[]>(`${this.baseUrl}/cart`);
+  }
+
+  updateCartItemQuantity(cycleId: number, newQuantity: number) {
+    const request = { cycleId, newQuantity };
+    return this.http.post(`${this.baseUrl}/updateCartItemQuantity`, request);
+  }
+  
+  removeFromCart(cycleId: number) {
+    return this.http.post(`${this.baseUrl}/removeFromCart`,cycleId);
+  }
+  
+  confirmOrder(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/confirmedOrder`, {} , {responseType:'text'});
   }
 
 }
